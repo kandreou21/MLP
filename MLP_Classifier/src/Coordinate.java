@@ -1,8 +1,12 @@
+import java.util.Arrays;
+
 public class Coordinate {
 	
 	private float x1;
 	private float x2;
 	private String category;
+	
+	public Coordinate() {}
 	
 	public Coordinate(float x1, float x2) {
 		this.x1 = x1;
@@ -46,5 +50,29 @@ public class Coordinate {
 
 	public String getCategory() {
 		return category;
+	}
+	
+	public float[] encodeCategory() {
+		
+		if (category.equals("C1")) {
+			return new float[]{1, 0, 0};
+		}
+		else if (category.equals("C2")) {
+			return new float[]{0, 1, 0};
+		}
+		else {
+			return new float[]{0, 0, 1};
+		}
+	}
+
+	public String decodeCategory(float[] encodedCategory) {
+		
+		int largest = 1;
+		for (int i = 1; i < encodedCategory.length; i++) {
+			if (encodedCategory[i] > encodedCategory[largest-1]) {
+				largest = i+1;
+			}
+		}
+		return "C" + largest;
 	}
 }
