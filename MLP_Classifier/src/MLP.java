@@ -1,6 +1,7 @@
-import java.io.BufferedReader;
+//4316 Konstantinos Andreou
+//4416 Ioannis Manos
+//4463 Miltiadis Papatheodoropoulos
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -12,35 +13,38 @@ public class MLP {
 	//DEFINES
 	private static final int d = 2; 		//arithmos eisodon
 	private static final int K = 3;			//arithmos kathgorion(3 eksodoi opoia einai pio konta sto 1 se authn thn kathgoria anhkei)
-	private static final int H1 = 5;		//arithmoi neuronon se kathe krummeno epipedo 5 
-	private static final int H2 = 5;		//5
-	private static final int H3 = 4;		//4
-	private static final int FUNCTION = 0;  //logistic/sigmoid = 0, tanh = 1, relu = 2  gia ta krummena //gia output neurons sigmoid h linear, mallon sigmoid
+	private static final int H1 = 10;		//arithmoi neuronon se kathe krummeno epipedo 5 
+	private static final int H2 = 10;		
+	private static final int H3 = 10;		
+	private static final int FUNCTION = 1;  //logistic/sigmoid = 0, tanh = 1, relu = 2  gia ta krummena
 	private static final int[] neuronsInLayers = {d, H1, H2, H3, K}; 
-	private static final int B = 4000;  	//B=1 seiriakh enhmerosh B=4000 omadiki enhmerosh
+	private static final int B = 40;  		
 	
 	private ActivationFunction function = new ActivationFunction(FUNCTION);   //initialise activation function
 	private ActivationFunction outputFunction = new ActivationFunction(0);   //initialise sigmoid activation function for output layer 
-	private float learningRate = 0.1f;
-	private float terminationThreshold = 0.0000001f; 	
+	private float learningRate;
+	private float terminationThreshold; 	
 	private static Layer[] layers = new Layer[5];				//thesi 0 neurones eisodou, thesi 1,2,3 hidden layer, thesi 4 output layer
 	private static int epoch = 0;								
 	private static ClassificationDataset set = new ClassificationDataset();
 	private static Coordinate[] learnCoordinates = set.getLearnCoordinates();	//paradeigmata mathisis
-	private static Coordinate[] testCoordinates = set.getTestCoordinates();		//paradeigmata elegxou
+	public static Coordinate[] testCoordinates = set.getTestCoordinates();		//paradeigmata elegxou
 	private static float prevLearningError = 1;												
 	private static float currLearningError;
-	
-	public MLP() {
-		/*
-		Scanner num = new Scanner(System.in).useLocale(Locale.US);	//useLocale(US) gia na dinetai input px 0.1 kai oxi 0,1
+	public static String[] printAtPanel = new String[4000];
+ 	
+	public MLP(int flag) {
 		
-		System.out.print("Give the learning rate(e.g 0.1):");
-		learningRate = num.nextFloat();
-
-		System.out.print("Give the termination threshold(e.g 0.01):");
-		terminationThreshold = num.nextFloat();		
-		*/
+		if (flag == 1){													
+			Scanner num = new Scanner(System.in).useLocale(Locale.US);	//useLocale(US) gia na dinetai input px 0.1 kai oxi 0,1
+			
+			System.out.print("Give the learning rate(e.g 0.01):");
+			learningRate = num.nextFloat();
+		
+			System.out.print("Give the termination threshold(e.g 0.00001):");
+			terminationThreshold = num.nextFloat();		
+		}
+		
 		for (int i = 0; i < layers.length; i++) {
 			layers[i] = new Layer(neuronsInLayers[i]);	//initialise neurons in each layer
 			if (i == 0) {								
@@ -83,8 +87,8 @@ public class MLP {
 		return output;
 	}
 	
-	public void backprop(float[] input, float[] output) {									//output = example's output (t1,t2,t3)
-		float[] mlpOutput = forward_pass(input);											//ypologizei ta errorGradients kathe neurona
+	public float backprop(float[] input, float[] output) {									//output = example's output (t1,t2,t3)
+		float[] mlpOutput = forward_pass(input);											
 		float delta = 0;
 		float error = 0; 
 			
@@ -107,40 +111,20 @@ public class MLP {
 		for (int i = 4; i > 0; i--) {														//gia kathe layer(apo to output mexri to proto krummeno)
 			for (int j = 0; j < layers[i].getLength(); j++) {								//gia kathe neurona tou layer(apo output mexri proto krummeno)
 				float[] errorGradients = new float[layers[i-1].getLength()+1];				//errorGradients plithos = plithos neuronon sto prohgoumeno layer + 1 gia thn polosi to arxikopoio me ta weights
-				errorGradients[0] = layers[i].getNeurons()[j].getDelta();   				//errorGradients[0] = delta
-				//errorGradients[0] += layers[i].getNeurons()[j].getDelta();				//thesi 0 meriki paragogos pros polosi = delta
-				/*for (int k = 1; k < errorGradients.length; k++) {							//gia kathe errorGradient tou neurona 
-					errorGradients[k] = layers[i].getNeurons()[j].getErrorGradients()[k];   //arxikopoihse to sto errorGradient tou neurona 
-				}*/
+				errorGradients[0] = layers[i].getNeurons()[j].getDelta();   				//errorGradients[0] = delta 
 				for (int k = 0; k < layers[i-1].getLength(); k++) {							//gia kathe neurona tou layer(apo teleutaio krummeno mexri to input layer)
-					errorGradients[k+1] = layers[i].getNeurons()[j].getDelta() * layers[i-1].getNeurons()[k].getValue() ;	//dE/dwij = deltai * yj  kai edo to prostheto
+					errorGradients[k+1] = layers[i].getNeurons()[j].getDelta() * layers[i-1].getNeurons()[k].getValue() ;	//dE/dwij = deltai * yj 
 				}
-				layers[i].getNeurons()[j].setErrorGradients(errorGradients);
-				//System.out.println(Arrays.toString(layers[i].getNeurons()[j].getErrorGradients()));
+				layers[i].getNeurons()[j].setErrorGradients(errorGradients);				//h setErrorGradients prosthetei tis kainouries paragogous sfalmatos
 			}
 		}
 		//sfalma ekpaideusis (ypologizetai sto telos kathe epoxhs)
-		if (epoch > 700) {
-			error = 0;
-			for (int i = 0; i < mlpOutput.length; i++) {
-				error += (float) Math.pow(output[i] - mlpOutput[i], 2);
-			}
-			error = error/2;
-			System.out.println("Current Learning error: " + error);
-			if (checkTermination(prevLearningError, error) == true) {
-				System.out.println("Learn stopped at epoch: " + epoch);
-				try {
-					saveWeights();
-					//check regularization using test set
-					loadWeights();
-					System.out.println("Generalization ability(Percentage of correct answers at test set): " + computeGeneralizationAbility() + "%");
-					System.exit(0);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			prevLearningError = error;
+		error = 0;
+		for (int i = 0; i < mlpOutput.length; i++) {
+			error += (float) Math.pow(output[i] - mlpOutput[i], 2);
 		}
+		error = error/2;	//error = 1/2[Sum(ti-oi)^2)]
+		return error;
 	}
 	
 	public void updateWeights() {															//gradient descent
@@ -155,6 +139,7 @@ public class MLP {
 				layers[i].getNeurons()[j].setWeights(updatedWeights);						//update weights
 			}
 		}
+		resetErrorGradients();
 	}
 	
 	public boolean checkTermination(float prevEpochError, float currEpochError) {
@@ -165,19 +150,71 @@ public class MLP {
 	}
 	
 	public static void main(String args[]) throws IOException {
-		MLP mlp = new MLP();
-		set.createSets();
+		MLP mlp = new MLP(1);
 		
 		while (true) {
-			for (int i = 0; i < learnCoordinates.length; i++) {
-				float[] input = {learnCoordinates[i].getX1(), learnCoordinates[i].getX2()};		//input
-				float[] output = learnCoordinates[i].encodeCategory();							//expected category output
-				//mlp.forward_pass(input);
-				//System.out.println("Expected out" + Arrays.toString(output));
-				mlp.backprop(input, output);
-				mlp.updateWeights();
+			float errorSum = 0;																		//its used to count error in each epoch
+			for (int i = 0; i < learnCoordinates.length; i+=B) {
+				for (int j = i; j < i+B; j++) {
+					float[] input = {learnCoordinates[j].getX1(), learnCoordinates[j].getX2()};		//input
+					float[] output = learnCoordinates[j].encodeCategory();							//expected category output
+					float error = mlp.backprop(input, output);	
+					errorSum += error;
+				}
+				mlp.updateWeights(); 
 			}
+			System.out.println("epoch: " + epoch);
+			currLearningError = errorSum / learnCoordinates.length;	
+			System.out.println("Learning Error: " + currLearningError);	
 			epoch++;
+			if (epoch > 700) {
+				if (mlp.checkTermination(prevLearningError, currLearningError) == true) {
+					mlp.saveWeights();
+					System.out.println("Training stopped at epoch: " + (epoch-1));
+					//check regularization using test set
+					System.out.println("Generalization ability(Percentage of correct answers at test set): " + mlp.computeGeneralizationAbility() + "%");
+					new MyFrame();
+					break;
+				}
+				prevLearningError = currLearningError; 
+			}
+		}
+	}
+	
+	//meta thn ektelesh ths ekpaideushs meso ths apo pano main mporeite na treksete mono thn parakato main 
+	//h opoia fortonei ta vari pou apothikeutikan sth mathisi kai ypologizei thn genikeutiki ikanothta   
+	/*
+	public static void main(String args[]) throws IOException {
+		MLP mlp = new MLP(0);
+		
+		mlp.loadWeights();
+		System.out.println("Generalization ability(Percentage of correct answers at test set): " + mlp.computeGeneralizationAbility() + "%");
+		new MyFrame();
+	}
+	*/
+	public float computeGeneralizationAbility() {
+		float hits = 0;
+		Coordinate coor = new Coordinate();
+		
+		for (int i = 0; i < testCoordinates.length; i++) {
+			float[] input = {testCoordinates[i].getX1(), testCoordinates[i].getX2()};
+			float[] output = forward_pass(input);
+			if (testCoordinates[i].getCategory().equals(coor.decodeCategory(output))) {
+				hits++;
+				printAtPanel[i] = "+";
+			}
+			else {
+				printAtPanel[i] = "-";
+			}
+		}
+		return hits * 100 / testCoordinates.length;		//percentage
+	}
+	
+	public void resetErrorGradients() {
+		for (int i = 1; i < layers.length; i++) {											//gia kathe layer ektos tou input opou den enhmeronontai ta bari
+			for (int j = 0; j < layers[i].getLength(); j++) {								//gia kathe neurona tou layer					
+				layers[i].getNeurons()[j].clearErrorGradients();
+			}
 		}
 	}
 	
@@ -196,7 +233,7 @@ public class MLP {
 		weightsStream.close();
 	}
 	
-	public void loadWeights() throws IOException {
+	public void loadWeights() throws IOException {										//load Weights from Weights.txt to use on test set 
 		File file = new File("Weights.txt");
 		Scanner scan = new Scanner(file);
 		
@@ -220,19 +257,5 @@ public class MLP {
 			}
 		}
 	}
-	
-	public float computeGeneralizationAbility() {
-		float hits = 0;
-		Coordinate coor = new Coordinate();
-		
-		for (int i = 0; i < testCoordinates.length; i++) {
-			float[] input = {testCoordinates[i].getX1(), testCoordinates[i].getX2()};
-			float[] output = forward_pass(input);
-			if (testCoordinates[i].getCategory().equals(coor.decodeCategory(output))) {
-				hits++;
-			}
-		}
-		return hits * 100 / testCoordinates.length;		//percentage
-	}
-}
 	 
+}

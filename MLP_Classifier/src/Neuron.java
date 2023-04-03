@@ -5,7 +5,7 @@ public class Neuron {
 	private float value;
 	private float bias; 
 	private float delta;
-	private float[] weights; //bari pou pernei apo tous neurones tou prohgoumenou epipedou
+	private float[] weights; 		//bari pou pernei apo tous neurones tou prohgoumenou epipedou
 	private float[] errorGradients;	//tha krataei tis merikes paragogous ton baron kai polosis 
 	
 	public Neuron(int weightsLength) { //mikos baron = neurones sto prohgoumeno epipedo
@@ -67,10 +67,15 @@ public class Neuron {
 	}
 	
 	public void setErrorGradients(float[] errorGradients) {
-		this.errorGradients = errorGradients;
+		for (int i = 0; i < this.errorGradients.length; i++) {
+			this.errorGradients[i] += errorGradients[i];
+		}
 	}
 	
-	public static void main(String args[]) {
-		Neuron neuron = new Neuron(2);
+	public void clearErrorGradients() {							
+		for (int i = 0; i < this.errorGradients.length; i++) {
+			this.errorGradients[i] = 0;
+		}
 	}
+	
 }

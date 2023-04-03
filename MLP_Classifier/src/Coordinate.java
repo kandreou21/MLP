@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class Coordinate {
 	
 	private float x1;
@@ -15,7 +13,7 @@ public class Coordinate {
 			category = "C1";
 		}
 		else if (((Math.pow(x1 - 0.5, 2)) + (Math.pow(x2 - 0.5, 2))) < 0.2 && x2 < 0.5) {	//2
-			category = "C1";
+			category = "C2";
 		}
 		else if (((Math.pow(x1 + 0.5, 2)) + (Math.pow(x2 + 0.5, 2))) < 0.2 && x2 > -0.5) {	//3
 			category = "C1";

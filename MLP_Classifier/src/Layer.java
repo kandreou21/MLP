@@ -22,10 +22,4 @@ public class Layer {
 		return length;
 	}
 	
-	public static void main(String args[]) {
-		Layer layer = new Layer(10);
-		layer.setNeurons(2);
-		
-	}
-	
 }
